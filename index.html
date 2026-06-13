@@ -1,0 +1,520 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>六壬起课 · 投资辅助</title>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+  :root{
+    --bg:#f5f0eb;--card:#fff;--primary:#8b6914;--primary-light:#f0e4c2;
+    --accent:#c8392d;--accent-buy:#2e7d32;--accent-sell:#c62828;
+    --accent-hold:#e65100;--text:#2c2c2c;--text-secondary:#6b6b6b;
+    --border:#ddd0c0;--radius:12px;
+  }
+  body{font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Noto Sans SC",sans-serif;background:var(--bg);color:var(--text);min-height:100vh;padding-bottom:80px}
+  .header{background:var(--primary);color:#fff;padding:16px 20px;text-align:center}
+  .header h1{font-size:18px;font-weight:600}
+  .header p{font-size:12px;opacity:0.8;margin-top:4px}
+
+  .card{background:var(--card);border-radius:var(--radius);margin:16px;padding:20px;box-shadow:0 2px 8px rgba(0,0,0,0.06)}
+  .card-title{font-size:14px;font-weight:600;color:var(--primary);margin-bottom:14px;padding-bottom:8px;border-bottom:1px solid var(--border)}
+  .form-item{margin-bottom:16px}
+  .form-item:last-child{margin-bottom:0}
+  label{display:block;font-size:13px;color:var(--text-secondary);margin-bottom:6px}
+  input,select{width:100%;padding:10px 14px;border:1.5px solid var(--border);border-radius:8px;font-size:15px;background:#fafaf8;color:var(--text);outline:none;transition:border-color 0.2s}
+  input:focus,select:focus{border-color:var(--primary)}
+  .datetime-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .btn-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .btn{background:var(--primary);color:#fff;border:none;border-radius:8px;padding:12px;font-size:15px;font-weight:600;cursor:pointer;transition:opacity 0.2s}
+  .btn:hover{opacity:0.85}
+  .btn:active{opacity:0.7}
+  .btn-outline{background:transparent;color:var(--primary);border:1.5px solid var(--primary)}
+  .btn-buy{background:var(--accent-buy)}
+  .btn-sell{background:var(--accent-sell)}
+  .btn-hold{background:var(--accent-hold)}
+
+  .result-section{margin-top:20px;display:none}
+  .result-section.show{display:block}
+  .chuan-item{background:var(--primary-light);border-radius:8px;padding:14px 16px;margin-bottom:10px;border-left:4px solid var(--primary)}
+  .chuan-item .chuan-label{font-size:11px;color:var(--primary);font-weight:600;text-transform:uppercase;letter-spacing:1px}
+  .chuan-item .chuan-zhi{font-size:22px;font-weight:700;color:var(--primary);margin:4px 0}
+  .chuan-item .chuan-detail{font-size:13px;color:var(--text-secondary);line-height:1.6}
+  .decision-box{border-radius:var(--radius);padding:20px;text-align:center;margin-top:16px}
+  .decision-box.buy{background:#e8f5e9;border:2px solid var(--accent-buy)}
+  .decision-box.sell{background:#ffebee;border:2px solid var(--accent-sell)}
+  .decision-box.hold{background:#fff3e0;border:2px solid var(--accent-hold)}
+  .decision-label{font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px}
+  .decision-box.buy .decision-label{color:var(--accent-buy)}
+  .decision-box.sell .decision-label{color:var(--accent-sell)}
+  .decision-box.hold .decision-label{color:var(--accent-hold)}
+  .decision-word{font-size:32px;font-weight:800}
+  .decision-box.buy .decision-word{color:var(--accent-buy)}
+  .decision-box.sell .decision-word{color:var(--accent-sell)}
+  .decision-box.hold .decision-word{color:var(--accent-hold)}
+  .reason-text{font-size:14px;color:var(--text-secondary);margin-top:12px;line-height:1.7;text-align:left;background:#fafaf8;border-radius:8px;padding:14px}
+
+  .history-btn{position:fixed;bottom:20px;right:20px;background:var(--primary);color:#fff;border:none;border-radius:50%;width:56px;height:56px;font-size:24px;cursor:pointer;box-shadow:0 4px 12px rgba(0,0,0,0.2);z-index:100}
+
+  .modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:200;align-items:flex-end;justify-content:center}
+  .modal-overlay.show{display:flex}
+  .modal{background:var(--card);border-radius:20px 20px 0 0;width:100%;max-width:600px;max-height:85vh;display:flex;flex-direction:column}
+  .modal-head{display:flex;align-items:center;justify-content:space-between;padding:18px 20px;border-bottom:1px solid var(--border)}
+  .modal-head h2{font-size:16px;font-weight:600}
+  .modal-close{background:none;border:none;font-size:24px;color:var(--text-secondary);cursor:pointer}
+  .modal-body{flex:1;overflow-y:auto;padding:16px}
+  .case-item{background:#fafaf8;border-radius:10px;padding:14px;margin-bottom:12px;border:1px solid var(--border)}
+  .case-item .case-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+  .case-item .case-date{font-size:12px;color:var(--text-secondary)}
+  .case-item .case-decision{font-size:12px;font-weight:700;padding:2px 8px;border-radius:4px}
+  .case-item .case-decision.buy{background:#e8f5e9;color:var(--accent-buy)}
+  .case-item .case-decision.sell{background:#ffebee;color:var(--accent-sell)}
+  .case-item .case-decision.hold{background:#fff3e0;color:var(--accent-hold)}
+  .case-item .case-target{font-size:14px;font-weight:600;margin-bottom:4px}
+  .case-item .case-question{font-size:13px;color:var(--text-secondary)}
+  .case-item .case-chuan{font-size:12px;color:var(--primary);margin-top:6px;font-family:monospace}
+  .case-result-row{display:flex;gap:8px;margin-top:10px;align-items:center}
+  .case-result-input{flex:1;padding:6px 10px;border:1px solid var(--border);border-radius:6px;font-size:13px}
+  .case-result-save{background:var(--primary);color:#fff;border:none;border-radius:6px;padding:6px 12px;font-size:13px;cursor:pointer}
+  .case-review{font-size:12px;color:var(--text-secondary);margin-top:8px;font-style:italic}
+  .filter-row{display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap}
+  .filter-btn{padding:6px 14px;border:1.5px solid var(--border);border-radius:20px;font-size:13px;background:transparent;color:var(--text-secondary);cursor:pointer}
+  .filter-btn.active{background:var(--primary);color:#fff;border-color:var(--primary)}
+  .empty-state{text-align:center;padding:40px;color:var(--text-secondary);font-size:14px}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>六壬起课 · 投资辅助</h1>
+  <p>边学边用，积累案例，验证准确率</p>
+</div>
+
+<div class="card">
+  <div class="card-title">起课信息</div>
+  <div class="datetime-row">
+    <div class="form-item">
+      <label>日期</label>
+      <input type="date" id="inputDate">
+    </div>
+    <div class="form-item">
+      <label>时辰</label>
+      <select id="inputShichen">
+        <option value="子">子时（23-01）</option>
+        <option value="丑">丑时（01-03）</option>
+        <option value="寅">寅时（03-05）</option>
+        <option value="卯">卯时（05-07）</option>
+        <option value="辰">辰时（07-09）</option>
+        <option value="巳">巳时（09-11）</option>
+        <option value="午">午时（11-13）</option>
+        <option value="未">未时（13-15）</option>
+        <option value="申">申时（15-17）</option>
+        <option value="酉">酉时（17-19）</option>
+        <option value="戌">戌时（19-21）</option>
+        <option value="亥">亥时（21-23）</option>
+      </select>
+    </div>
+  </div>
+  <div class="form-item">
+    <label>占测标的</label>
+    <select id="inputPreset" onchange="toggleCustomTarget()">
+      <option value="">— 其他（手动输入）—</option>
+      <option value="上证指数">上证指数</option>
+      <option value="深证成指">深证成指</option>
+      <option value="创业板指">创业板指</option>
+      <option value="科创50">科创50</option>
+      <option value="沪深300ETF">沪深300ETF</option>
+      <option value="中证500ETF">中证500ETF</option>
+      <option value="科创50ETF">科创50ETF</option>
+      <option value="化工ETF">化工ETF</option>
+      <option value="军工ETF">军工ETF</option>
+      <option value="新能源车ETF">新能源车ETF</option>
+      <option value="医药ETF">医药ETF</option>
+    </select>
+    <input type="text" id="inputTarget" placeholder="输入股票名/ETF名，如：化工ETF" style="margin-top:8px;display:none">
+  </div>
+  <div class="form-item">
+    <label>占测问题（自动生成）</label>
+    <input type="text" id="inputQuestion" readonly placeholder="选择标的后自动生成">
+  </div>
+  <div class="btn-row" style="margin-top:20px">
+    <button class="btn btn-outline" onclick="resetForm()">重置</button>
+    <button class="btn" onclick="startDivination()">起课</button>
+  </div>
+</div>
+
+<div class="card result-section" id="resultSection">
+  <div class="card-title">三传结果</div>
+  <div id="chuanContainer"></div>
+  <div id="decisionBox" class="decision-box"></div>
+  <div id="reasonText" class="reason-text"></div>
+  <div class="btn-row" style="margin-top:16px">
+    <button class="btn btn-outline" onclick="saveToHistory()">保存案例</button>
+    <button class="btn" onclick="resetForm()">再来一卦</button>
+  </div>
+</div>
+
+<button class="history-btn" onclick="openHistory()">📋</button>
+
+<div class="modal-overlay" id="historyModal">
+  <div class="modal">
+    <div class="modal-head">
+      <h2>历史案例库</h2>
+      <button class="modal-close" onclick="closeHistory()">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="filter-row" id="filterRow">
+        <button class="filter-btn active" onclick="setFilter('all')">全部</button>
+        <button class="filter-btn" onclick="setFilter('buy')">买</button>
+        <button class="filter-btn" onclick="setFilter('sell')">卖</button>
+        <button class="filter-btn" onclick="setFilter('hold')">观望</button>
+        <button class="filter-btn" onclick="setFilter('unverified')">待验证</button>
+      </div>
+      <div id="historyList"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ===== 工具函数 =====
+function getToday(){
+  const d=new Date();
+  return d.toISOString().split('T')[0];
+}
+function pad(n){return n<10?'0'+n:n}
+function getCurrentShichen(){
+  const h=new Date().getHours();
+  if(h>=23||h<1) return '子';
+  if(h>=1&&h<3) return '丑';
+  if(h>=3&&h<5) return '寅';
+  if(h>=5&&h<7) return '卯';
+  if(h>=7&&h<9) return '辰';
+  if(h>=9&&h<11) return '巳';
+  if(h>=11&&h<13) return '午';
+  if(h>=13&&h<15) return '未';
+  if(h>=15&&h<17) return '申';
+  if(h>=17&&h<19) return '酉';
+  if(h>=19&&h<21) return '戌';
+  return '亥';
+}
+function generateId(){
+  return Date.now().toString(36)+Math.random().toString(36).substr(2,9);
+}
+
+// ===== 六壬核心逻辑 =====
+
+// 地支对应神将（简化版）
+const zhiToShenjiang = {
+  '子':'神后','丑':'大吉','寅':'功曹','卯':'太冲',
+  '辰':'天罡','巳':'太乙','午':'胜光','未':'小吉',
+  '申':'传送','酉':'从魁','戌':'河魁','亥':'登明'
+};
+
+// 神将象意
+const shenjiangMeaning = {
+  '神后':'主隐藏、暧昧、桃花、财利，适合探筹、求私'
+  ,'大吉':'主平稳、吉利、田宅、契约，有稳重之象'
+  ,'功曹':'主官曹、文书、调和，有调和之象'
+  ,'太冲':'主变动、惊恐、舟车、盗贼，有突然之象'
+  ,'天罡':'主争斗、官司、欺诈，有冲突之象'
+  ,'太乙':'主光明、福祉、符箓、奇异，有吉祥之象'
+  ,'胜光':'主光耀、文书、财利、马匹，有礼仪之象'
+  ,'小吉':'主酒食、婚姻、祈福，有和合之象'
+  ,'传送':'主迁移、变动、交易、道路，有行走之象'
+  ,'从魁':'主收成、阴私、女人，有收敛之象'
+  ,'河魁':'主印信、牢狱、斗争，有禁锢之象'
+  ,'登明':'主征召、阴私、玄学，有神秘之象'
+};
+
+// 五行旺衰
+const wuxing = {
+  '子':{wx:'水',strength:'旺'},'丑':{wx:'土',strength:'死'}
+  ,'寅':{wx:'木',strength:'相'},'卯':{wx:'木',strength:'旺'}
+  ,'辰':{wx:'土',strength:'死'},'巳':{wx:'火',strength:'相'}
+  ,'午':{wx:'火',strength:'旺'},'未':{wx:'土',strength:'死'}
+  ,'申':{wx:'金',strength:'相'},'酉':{wx:'金',strength:'旺'}
+  ,'戌':{wx:'土',strength:'死'},'亥':{wx:'水',strength:'旺'}
+};
+
+// 地支五行
+const zhiWx = {
+  '子':'水','丑':'土','寅':'木','卯':'木'
+  ,'辰':'土','巳':'火','午':'火','未':'土'
+  ,'申':'金','酉':'金','戌':'土','亥':'水'
+};
+
+// 吉神列表
+const jishenSet = new Set(['太乙','小吉','功曹','传送','登明','神后','大吉']);
+
+// 凶神列表
+const xiongshenSet = new Set(['天罡','河魁','太冲']);
+
+// 地支生克关系判断
+function getElementRelation(zhi1,zhi2){
+  const wx1=zhiWx[zhi1],wx2=zhiWx[zhi2];
+  if(wx1===wx2) return '比和';
+  const sheng={'木':'火','火':'土','土':'金','金':'水','水':'木'};
+  const ke={'木':'土','火':'金','土':'水','金':'木','水':'火'};
+  if(sheng[wx1]===wx2) return '相生';
+  if(ke[wx1]===wx2) return '相克';
+  return '无关';
+}
+
+// 起三传算法（基于日期+时辰的简化排法）
+// 这里用"大衍取数"法：取日干+时支+月建，综合取三传
+function getSanChuan(dateStr,shichen,target){
+  // 提取年月日
+  const [y,m,d]=dateStr.split('-').map(Number);
+  // 用日期计算基本地支
+  const dayIndex=(d)%12;
+  const shichenIdx=['子','丑','寅','卯','辰','巳','午','未','申','酉','戌','亥'].indexOf(shichen);
+  // 月建地支（简化：正月寅，顺推）
+  const monthIdx=((m-1)%12);
+  const monthZhi=['寅','卯','辰','巳','午','未','申','酉','戌','亥','子','丑'][monthIdx];
+  // 取数：大衍法（简化版）
+  // 用日、时、月建三个参数取三传地支
+  const zhiList=['子','丑','寅','卯','辰','巳','午','未','申','酉','戌','亥'];
+  // 初传：日+时+月建取
+  const chuan1Idx=(dayIndex+shichenIdx+(monthIdx))%12;
+  // 中传：初传+日干数
+  const chuan2Idx=(chuan1Idx+d)%12;
+  // 末传：中传+时支数
+  const chuan3Idx=(chuan2Idx+shichenIdx)%12;
+  return {
+    chuan1:zhiList[chuan1Idx],
+    chuan2:zhiList[chuan2Idx],
+    chuan3:zhiList[chuan3Idx]
+  };
+}
+
+// 判断决策
+function getDecision(chuan,target){
+  const [c1,c2,c3]=[chuan.chuan1,chuan.chuan2,chuan.chuan3];
+  const sj1=zhiToShenjiang[c1],sj2=zhiToShenjiang[c2],sj3=zhiToShenjiang[c3];
+  // 统计吉凶
+  let score=0;
+  const reasons=[];
+  // 初传权重最大
+  const chuanList=[{zhi:c1,sj:sj1,pos:'初传'},{zhi:c2,sj:sj2,pos:'中传'},{zhi:c3,sj:sj3,pos:'末传'}];
+  chuanList.forEach((c,i)=>{
+    const isJi=jishenSet.has(c.sj);
+    const isXiong=xiongshenSet.has(c.sj);
+    const w=wuxing[c.zhi];
+    if(isJi){score+=2;reasons.push(`${c.pos}「${c.zhi}·${c.sj}」为吉神，${w.wx}旺${w.strength}，主吉利`);}
+    else if(isXiong){score-=2;reasons.push(`${c.pos}「${c.zhi}·${c.sj}」为凶神，${w.wx}旺${w.strength}，主变动风险`);}
+    else{reasons.push(`${c.pos}「${c.zhi}·${c.sj}」，${w.wx}旺${w.strength}，中性`);}
+    // 看中末传对初传的作用
+    if(i===0){
+      const rel2=getElementRelation(c.zhi,c2);
+      const rel3=getElementRelation(c.zhi,c3);
+      if(rel2==='相生'){score+=1;reasons.push(`→ 中传「${c2}」对初传相生，助益`);}
+      if(rel2==='相克'){score-=1;reasons.push(`→ 中传「${c2}」对初传相克，克制`);}
+      if(rel3==='相生'){score+=1;reasons.push(`→ 末传「${c3}」对初传相生，助益`);}
+      if(rel3==='相克'){score-=1;reasons.push(`→ 末传「${c3}」对初传相克，克制`);}
+    }
+  });
+  // 三传整体顺序象意（简化判断）
+  // 巳（太乙）开头：主光明吉利
+  // 卯（太冲）开头：主变动
+  // 亥/子（水）开头：主收藏
+  // 申（传送）开头：主行走出行
+  // 看是否三传见同类吉神会聚
+  const jiCount=[sj1,sj2,sj3].filter(s=>jishenSet.has(s)).length;
+  const xiongCount=[sj1,sj2,sj3].filter(s=>xiongshenSet.has(s)).length;
+  if(jiCount>=2&&score>=2) return {decision:'买',score,reasons};
+  if(xiongCount>=2&&score<=-2) return {decision:'卖',score,reasons};
+  if(score>=2) return {decision:'买',score,reasons};
+  if(score<=-2) return {decision:'卖',score,reasons};
+  // 初吉末凶或初凶末吉
+  const startJi=jishenSet.has(sj1),endJi=jishenSet.has(sj1);
+  if(startJi&&xiongshenSet.has(sj3)) return {decision:'观望',score,reasons:[...reasons,`→ 初吉末凶，趋势不明，谨慎观望`]};
+  if(!startJi&&jiCount>=2) return {decision:'观望',score,reasons:[...reasons,`→ 初凶但中末吉神汇聚，可谨慎关注`]};
+  return {decision:'观望',score,reasons};
+}
+
+// ===== 表单交互 =====
+
+function toggleCustomTarget(){
+  const preset=document.getElementById('inputPreset').value;
+  const custom=document.getElementById('inputTarget');
+  custom.style.display=preset===''?'block':'none';
+  updateQuestion();
+}
+
+function updateQuestion(){
+  const target=document.getElementById('inputPreset').value||document.getElementById('inputTarget').value;
+  const q=document.getElementById('inputQuestion');
+  if(target){
+    q.value=`能不能买 ${target}？`;
+  } else {
+    q.value='';
+  }
+}
+
+document.getElementById('inputPreset').addEventListener('change',toggleCustomTarget);
+document.getElementById('inputTarget').addEventListener('input',updateQuestion);
+
+// 初始化日期和时辰
+window.addEventListener('DOMContentLoaded',()=>{
+  document.getElementById('inputDate').value=getToday();
+  document.getElementById('inputShichen').value=getCurrentShichen();
+});
+
+function resetForm(){
+  document.getElementById('inputDate').value=getToday();
+  document.getElementById('inputShichen').value=getCurrentShichen();
+  document.getElementById('inputPreset').value='';
+  document.getElementById('inputTarget').value='';
+  document.getElementById('inputTarget').style.display='none';
+  document.getElementById('inputQuestion').value='';
+  document.getElementById('resultSection').classList.remove('show');
+}
+
+function startDivination(){
+  const date=document.getElementById('inputDate').value;
+  const shichen=document.getElementById('inputShichen').value;
+  const target=document.getElementById('inputPreset').value||document.getElementById('inputTarget').value;
+  if(!date||!shichen){
+    alert('请填写日期和时辰');return;
+  }
+  if(!target){
+    alert('请选择或输入占测标的');return;
+  }
+  // 生成三传
+  const chuan=getSanChuan(date,shichen,target);
+  const sj1=zhiToShenjiang[chuan.chuan1],sj2=zhiToShenjiang[chuan.chuan2],sj3=zhiToShenjiang[chuan.chuan3];
+  const w1=wuxing[chuan.chuan1],w2=wuxing[chuan.chuan2],w3=wuxing[chuan.chuan3];
+  // 展示三传
+  const container=document.getElementById('chuanContainer');
+  container.innerHTML=`
+    <div class="chuan-item">
+      <div class="chuan-label">初传</div>
+      <div class="chuan-zhi">${chuan.chuan1} · ${sj1}</div>
+      <div class="chuan-detail">${w1.wx}气${w1.strength} · ${shenjiangMeaning[sj1]}</div>
+    </div>
+    <div class="chuan-item">
+      <div class="chuan-label">中传</div>
+      <div class="chuan-zhi">${chuan.chuan2} · ${sj2}</div>
+      <div class="chuan-detail">${w2.wx}气${w2.strength} · ${shenjiangMeaning[sj2]}</div>
+    </div>
+    <div class="chuan-item">
+      <div class="chuan-label">末传</div>
+      <div class="chuan-zhi">${chuan.chuan3} · ${sj3}</div>
+      <div class="chuan-detail">${w3.wx}气${w3.strength} · ${shenjiangMeaning[sj3]}</div>
+    </div>
+  `;
+  // 判断决策
+  const {decision,score,reasons}=getDecision(chuan,target);
+  const decisionBox=document.getElementById('decisionBox');
+  decisionBox.className='decision-box '+decision;
+  const decisionMap={买:'买',卖:'卖',观望:'观望'};
+  decisionBox.innerHTML=`
+    <div class="decision-label">决策建议</div>
+    <div class="decision-word">${decisionMap[decision]}</div>
+  `;
+  const reasonText=document.getElementById('reasonText');
+  reasonText.innerHTML='<strong>判断依据：</strong><br>'+reasons.map(r=>'· '+r).join('<br>');
+  document.getElementById('resultSection').classList.add('show');
+  // 滚动到结果
+  document.getElementById('resultSection').scrollIntoView({behavior:'smooth',block:'start'});
+  // 保存当前案例数据到window，保存时用
+  window._currentCase={
+    id:generateId(),
+    date,shichen,target,
+    question:`能不能买 ${target}？`,
+    chuan1:chuan.chuan1,sj1,sj2,sj3,
+    chuan2:chuan.chuan2,chuan3:chuan.chuan3,
+    decision,reasons:reasons.join('\n'),
+    result:'',review:'',createdAt:new Date().toISOString()
+  };
+}
+
+// ===== 案例库 =====
+const STORAGE_KEY='liuren_cases';
+
+function getCases(){
+  try{return JSON.parse(localStorage.getItem(STORAGE_KEY)||'[]');}catch{return [];}
+}
+function saveCases(cases){
+  localStorage.setItem(STORAGE_KEY,JSON.stringify(cases));
+}
+
+function saveToHistory(){
+  if(!window._currentCase) return;
+  const cases=getCases();
+  // 检查是否已存在
+  const idx=cases.findIndex(c=>c.id===window._currentCase.id);
+  if(idx>=0){
+    cases[idx]={...cases[idx],...window._currentCase};
+  } else {
+    cases.unshift(window._currentCase);
+  }
+  saveCases(cases);
+  alert('案例已保存到本地案例库');
+}
+
+let currentFilter='all';
+function setFilter(f){
+  currentFilter=f;
+  document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));
+  event.target.classList.add('active');
+  renderHistory();
+}
+
+function openHistory(){
+  document.getElementById('historyModal').classList.add('show');
+  renderHistory();
+}
+function closeHistory(){
+  document.getElementById('historyModal').classList.remove('show');
+}
+function renderHistory(){
+  const cases=getCases();
+  const list=document.getElementById('historyList');
+  let filtered=cases;
+  if(currentFilter==='buy') filtered=cases.filter(c=>c.decision==='买');
+  else if(currentFilter==='sell') filtered=cases.filter(c=>c.decision==='卖');
+  else if(currentFilter==='hold') filtered=cases.filter(c=>c.decision==='观望');
+  else if(currentFilter==='unverified') filtered=cases.filter(c=>!c.result);
+  if(filtered.length===0){
+    list.innerHTML='<div class="empty-state">暂无案例，起了第一卦再来吧~</div>';
+    return;
+  }
+  list.innerHTML=filtered.map(c=>`
+    <div class="case-item">
+      <div class="case-header">
+        <span class="case-date">${c.date} ${c.shichen}时</span>
+        <span class="case-decision ${c.decision}">${c.decision}</span>
+      </div>
+      <div class="case-target">${c.target}</div>
+      <div class="case-question">${c.question}</div>
+      <div class="case-chuan">三传：${c.chuan1} → ${c.chuan2} → ${c.chuan3}</div>
+      <div class="case-result-row">
+        <input type="text" class="case-result-input" placeholder="事后结果：买/卖/观望/涨/跌" value="${c.result||''}" onchange="updateCaseResult('${c.id}',this.value)">
+        <button class="case-result-save" onclick="saveReviewPrompt('${c.id}')">复盘</button>
+      </div>
+      ${c.review?'<div class="case-review">复盘：'+c.review+'</div>':''}
+    </div>
+  `).join('');
+}
+
+function updateCaseResult(id,result){
+  const cases=getCases();
+  const idx=cases.findIndex(c=>c.id===id);
+  if(idx>=0){cases[idx].result=result;saveCases(cases);}
+}
+function saveReviewPrompt(id){
+  const review=prompt('请输入复盘内容（判断是否准确，经验教训）：');
+  if(review===null) return;
+  const cases=getCases();
+  const idx=cases.findIndex(c=>c.id===id);
+  if(idx>=0){cases[idx].review=review;saveCases(cases);renderHistory();}
+}
+
+// 点击遮罩关闭
+document.getElementById('historyModal').addEventListener('click',function(e){
+  if(e.target===this) closeHistory();
+});
+</script>
+</body>
+</html>
