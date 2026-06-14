@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>六壬起课 V3 · 投资辅助</title>
+<title>大六壬起课 V4 · 人事预测</title>
 <style>
   *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
   :root{
@@ -19,6 +19,13 @@
 
   .card{background:var(--card);border-radius:var(--radius);margin:16px;padding:20px;box-shadow:0 2px 8px rgba(0,0,0,0.06)}
   .card-title{font-size:14px;font-weight:600;color:var(--primary);margin-bottom:14px;padding-bottom:8px;border-bottom:1px solid var(--border)}
+  .intro p{font-size:13px;line-height:1.75;color:var(--text-secondary);margin-bottom:10px}
+  .intro p:last-child{margin-bottom:0}
+  .intro .plain{color:var(--text);font-weight:600}
+  .intro-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:8px;margin-top:12px}
+  .intro-chip{background:#fafaf8;border:1px solid var(--border);border-radius:8px;padding:10px}
+  .intro-chip b{display:block;color:var(--primary);font-size:13px;margin-bottom:4px}
+  .intro-chip span{font-size:12px;color:var(--text-secondary);line-height:1.45}
   .form-item{margin-bottom:16px}
   .form-item:last-child{margin-bottom:0}
   label{display:block;font-size:13px;color:var(--text-secondary);margin-bottom:6px}
@@ -129,8 +136,20 @@
 <body>
 
 <div class="header">
-  <h1>六壬起课 V3 · 投资辅助</h1>
-  <p>正统骨架版 · 月将贵人 + 四课三传 + 旬空刑冲</p>
+  <h1>大六壬起课 V4 · 人事预测</h1>
+  <p>以时起课 · 观象断事 · 股票只是求财之一</p>
+</div>
+
+<div class="card intro">
+  <div class="card-title">大六壬是什么</div>
+  <p><span class="plain">大六壬是古人用来判断具体事情的术数。</span>它不先问“命好不好”，而是问“此时此事如何发展”：能不能做、宜不宜动、风险在哪里、结果大概落向何处。</p>
+  <p>古人断事，核心不是猜，而是把“天时、地盘、人事、变化”放在一张课里看。月将看天时，日干日支看主客，四课看内外关系，三传看事情的起因、过程、结果，神将和旬空刑冲再补充吉凶虚实。</p>
+  <p>本工具适合问具体事项：合作、工作、回款、合同、出行、关系、健康忧患，也可以问股票和ETF。问题越清楚，课象越容易落地。</p>
+  <div class="intro-grid">
+    <div class="intro-chip"><b>先定事</b><span>只问一个具体动作，不问一团乱麻。</span></div>
+    <div class="intro-chip"><b>再观象</b><span>看四课三传、神将、旬空冲害。</span></div>
+    <div class="intro-chip"><b>后复盘</b><span>保存案例，事后验证，不凭感觉。</span></div>
+  </div>
 </div>
 
 <div class="card">
@@ -159,26 +178,48 @@
     </div>
   </div>
   <div class="form-item">
-    <label>占测标的</label>
-    <select id="inputPreset" onchange="toggleCustomTarget()">
-      <option value="">— 其他（手动输入）—</option>
-      <option value="上证指数">上证指数</option>
-      <option value="深证成指">深证成指</option>
-      <option value="创业板指">创业板指</option>
-      <option value="科创50">科创50</option>
-      <option value="沪深300ETF">沪深300ETF</option>
-      <option value="中证500ETF">中证500ETF</option>
-      <option value="科创50ETF">科创50ETF</option>
-      <option value="化工ETF">化工ETF</option>
-      <option value="军工ETF">军工ETF</option>
-      <option value="新能源车ETF">新能源车ETF</option>
-      <option value="医药ETF">医药ETF</option>
+    <label>事项类型</label>
+    <select id="inputEventType" onchange="updateQuestion()">
+      <option value="投资求财">投资求财</option>
+      <option value="合作人事">合作人事</option>
+      <option value="工作事业">工作事业</option>
+      <option value="合同回款">合同回款</option>
+      <option value="感情关系">感情关系</option>
+      <option value="出行迁移">出行迁移</option>
+      <option value="健康忧患">健康忧患</option>
+      <option value="其他事项">其他事项</option>
     </select>
-    <input type="text" id="inputTarget" placeholder="输入股票名/ETF名，如：化工ETF" style="margin-top:8px">
   </div>
   <div class="form-item">
-    <label>占测问题（自动生成）</label>
-    <input type="text" id="inputQuestion" readonly placeholder="选择标的后自动生成">
+    <label>所问之事</label>
+    <select id="inputPreset" onchange="toggleCustomTarget()">
+      <option value="">— 其他（手动输入）—</option>
+      <optgroup label="投资求财">
+        <option value="上证指数">上证指数</option>
+        <option value="沪深300ETF">沪深300ETF</option>
+        <option value="中证500ETF">中证500ETF</option>
+        <option value="科创50ETF">科创50ETF</option>
+        <option value="化工ETF">化工ETF</option>
+        <option value="军工ETF">军工ETF</option>
+        <option value="新能源车ETF">新能源车ETF</option>
+        <option value="医药ETF">医药ETF</option>
+      </optgroup>
+      <optgroup label="人事事项">
+        <option value="项目合作">项目合作</option>
+        <option value="客户回款">客户回款</option>
+        <option value="合同签署">合同签署</option>
+        <option value="岗位调整">岗位调整</option>
+        <option value="团队用人">团队用人</option>
+        <option value="出行安排">出行安排</option>
+        <option value="家人健康">家人健康</option>
+        <option value="感情关系">感情关系</option>
+      </optgroup>
+    </select>
+    <input type="text" id="inputTarget" placeholder="输入人、事、项目或标的，如：沪深300ETF、某项目、某客户" style="margin-top:8px">
+  </div>
+  <div class="form-item">
+    <label>占测问题（可修改）</label>
+    <input type="text" id="inputQuestion" placeholder="例如：这个项目本周是否适合推进？">
   </div>
   <div class="btn-row" style="margin-top:20px">
     <button class="btn btn-outline" onclick="resetForm()">重置</button>
@@ -232,8 +273,8 @@
     <div class="modal-body">
       <div class="filter-row" id="filterRow">
         <button class="filter-btn active" onclick="setFilter('all')">全部</button>
-        <button class="filter-btn" onclick="setFilter('buy')">买</button>
-        <button class="filter-btn" onclick="setFilter('sell')">卖</button>
+        <button class="filter-btn" onclick="setFilter('positive')">可行/买</button>
+        <button class="filter-btn" onclick="setFilter('negative')">不宜/卖</button>
         <button class="filter-btn" onclick="setFilter('hold')">观望</button>
         <button class="filter-btn" onclick="setFilter('unverified')">待验证</button>
       </div>
@@ -289,18 +330,20 @@ function evalHuying(sj1,sj3){var sJ=jishenSet.has(sj1),eJ=jishenSet.has(sj3),sX=
 
 function applyFrameAdjustments(base,frame){var chuan=[frame.chuan.chuan1,frame.chuan.chuan2,frame.chuan.chuan3];var hasKong=chuan.some(function(z){return frame.kong.indexOf(z)!==-1;});var hasChong=chuan.some(function(z){return clashMap[frame.riZhi]===z;});var hasHai=chuan.some(function(z){return harmMap[frame.riZhi]===z;});var hasHorse=chuan.some(function(z){return frame.horse===z;});if(hasKong){base.score-=1;base.reasons.push('正统骨架：三传见旬空，信号偏虚，降低买入力度');}if(hasChong){base.score-=0.8;base.reasons.push('正统骨架：三传冲日支，标的/环境有冲动变化，宜控风险');}if(hasHai){base.score-=0.5;base.reasons.push('正统骨架：三传害日支，暗中牵制，宜谨慎');}if(hasHorse){base.score+=0.4;base.reasons.push('正统骨架：三传临驿马，主变动加速，适合观察时机但不宜重仓追动');}if(frame.noble&&chuan.indexOf(frame.noble.zhi)!==-1){base.score+=0.5;base.reasons.push('正统骨架：贵人入三传，有人事/政策/机构助力之象');}}
 
-function getSignal(score,puritySignal,huyingSignal,ganRelation){var ganBonus=ganRelation.tag==='sheng'?0.5:ganRelation.tag==='ke'?-0.5:0;var total=score+puritySignal+huyingSignal+ganBonus;var signal='',signalCls='';var stars='';var starCount=0;if(total>=2.5){signal='强买入';signalCls='strong-buy';starCount=5;}else if(total>=1.5){signal='买入';signalCls='buy';starCount=4;}else if(total>=0.5){signal='谨慎买入';signalCls='cautious-buy';starCount=3;}else if(total>=-0.5){signal='观望';signalCls='hold';starCount=2;}else if(total>=-1.5){signal='谨慎卖出';signalCls='cautious-sell';starCount=3;}else if(total>=-2.5){signal='卖出';signalCls='sell';starCount=4;}else{signal='强卖出';signalCls='strong-sell';starCount=5;}for(var i=0;i<starCount;i++)stars+='★';for(var j=starCount;j<5;j++)stars+='☆';return{signal:signal,signalCls:signalCls,stars:stars,total:total};}
+function getSignal(score,puritySignal,huyingSignal,ganRelation,eventType){var ganBonus=ganRelation.tag==='sheng'?0.5:ganRelation.tag==='ke'?-0.5:0;var total=score+puritySignal+huyingSignal+ganBonus;var signal='',signalCls='';var stars='';var starCount=0;var invest=eventType==='投资求财';if(total>=2.5){signal=invest?'强买入':'强可行';signalCls='strong-buy';starCount=5;}else if(total>=1.5){signal=invest?'买入':'可行';signalCls='buy';starCount=4;}else if(total>=0.5){signal=invest?'谨慎买入':'谨慎可行';signalCls='cautious-buy';starCount=3;}else if(total>=-0.5){signal='观望';signalCls='hold';starCount=2;}else if(total>=-1.5){signal=invest?'谨慎卖出':'谨慎不宜';signalCls='cautious-sell';starCount=3;}else if(total>=-2.5){signal=invest?'卖出':'不宜';signalCls='sell';starCount=4;}else{signal=invest?'强卖出':'强不宜';signalCls='strong-sell';starCount=5;}for(var i=0;i<starCount;i++)stars+='★';for(var j=starCount;j<5;j++)stars+='☆';return{signal:signal,signalCls:signalCls,stars:stars,total:total};}
 
 function getBaseScore(chuan){var c1=chuan.chuan1,c2=chuan.chuan2,c3=chuan.chuan3;var sj1=zhiToShenjiang[c1],sj2=zhiToShenjiang[c2],sj3=zhiToShenjiang[c3];var score=0;var reasons=[];var list=[{zhi:c1,sj:sj1,pos:'初传'},{zhi:c2,sj:sj2,pos:'中传'},{zhi:c3,sj:sj3,pos:'末传'}];for(var i=0;i<list.length;i++){var c=list[i];var isJi=jishenSet.has(c.sj);var isXiong=xiongshenSet.has(c.sj);var w=wuxing[c.zhi];if(isJi){score+=2;reasons.push(c.pos+'「'+c.zhi+'·'+c.sj+'」为吉神，'+w.wx+w.strength+'，主吉利');}else if(isXiong){score-=2;reasons.push(c.pos+'「'+c.zhi+'·'+c.sj+'」为凶神，'+w.wx+w.strength+'，主变动风险');}else{reasons.push(c.pos+'「'+c.zhi+'·'+c.sj+'」，'+w.wx+w.strength+'，中性');}if(i===0){var rel2=getElementRelation(c.zhi,c2);var rel3=getElementRelation(c.zhi,c3);if(rel2==='相生'){score+=1;reasons.push('→ 中传「'+c2+'」对初传相生，助益');}if(rel2==='相克'){score-=1;reasons.push('→ 中传「'+c2+'」对初传相克，克制');}if(rel3==='相生'){score+=1;reasons.push('→ 末传「'+c3+'」对初传相生，助益');}if(rel3==='相克'){score-=1;reasons.push('→ 末传「'+c3+'」对初传相克，克制');}}}return{score:score,reasons:reasons};}
 function toggleCustomTarget(){var p=document.getElementById('inputPreset').value;var c=document.getElementById('inputTarget');c.style.display=p===''?'block':'none';updateQuestion();}
-function updateQuestion(){var t=(document.getElementById('inputPreset').value||document.getElementById('inputTarget').value).trim();var q=document.getElementById('inputQuestion');q.value=t?'能不能买 '+t+'？':'';document.getElementById('resultSection').classList.remove('show');window._currentCase=null;}
+function buildQuestion(eventType,target){if(!target)return '';if(eventType==='投资求财')return '能不能买 '+target+'？';if(eventType==='合同回款')return target+'这件事近期能否顺利落实？';if(eventType==='出行迁移')return target+'是否适合按计划出行/变动？';if(eventType==='健康忧患')return target+'这件事近期是否有碍？';if(eventType==='感情关系')return target+'这段关系近期如何发展？';return target+'这件事是否适合推进？';}
+function updateQuestion(){var t=(document.getElementById('inputPreset').value||document.getElementById('inputTarget').value).trim();var eventType=document.getElementById('inputEventType').value;var q=document.getElementById('inputQuestion');if(!q.value||q.dataset.auto==='1'){q.value=buildQuestion(eventType,t);q.dataset.auto='1';}document.getElementById('resultSection').classList.remove('show');window._currentCase=null;}
 document.getElementById('inputPreset').addEventListener('change',toggleCustomTarget);
 document.getElementById('inputTarget').addEventListener('input',updateQuestion);
+document.getElementById('inputQuestion').addEventListener('input',function(){this.dataset.auto='0';});
 window.addEventListener('DOMContentLoaded',function(){document.getElementById('inputDate').value=getToday();document.getElementById('inputShichen').value=getCurrentShichen();toggleCustomTarget();});
 
-function resetForm(){document.getElementById('inputDate').value=getToday();document.getElementById('inputShichen').value=getCurrentShichen();document.getElementById('inputPreset').value='';document.getElementById('inputTarget').value='';toggleCustomTarget();document.getElementById('inputQuestion').value='';document.getElementById('resultSection').classList.remove('show');}
+function resetForm(){document.getElementById('inputDate').value=getToday();document.getElementById('inputShichen').value=getCurrentShichen();document.getElementById('inputEventType').value='投资求财';document.getElementById('inputPreset').value='';document.getElementById('inputTarget').value='';document.getElementById('inputQuestion').value='';document.getElementById('inputQuestion').dataset.auto='1';toggleCustomTarget();document.getElementById('resultSection').classList.remove('show');}
 
-function startDivination(){var date=document.getElementById('inputDate').value;var shichen=document.getElementById('inputShichen').value;var target=(document.getElementById('inputPreset').value||document.getElementById('inputTarget').value).trim();if(!date||!shichen){alert('请填写日期和时辰');return;}if(!target){alert('请选择或输入占测标的');return;}var frame=getLiurenFrame(date,shichen);var riGan=frame.riGan;var riZhi=frame.riZhi;var chuan=frame.chuan;renderLiurenFrame(frame);var sj1=zhiToShenjiang[chuan.chuan1];var sj2=zhiToShenjiang[chuan.chuan2];var sj3=zhiToShenjiang[chuan.chuan3];var w1=wuxing[chuan.chuan1];var w2=wuxing[chuan.chuan2];var w3=wuxing[chuan.chuan3];var gw1=ganWangxiang[riGan];var wr1=wuxing[riZhi];document.getElementById('chuanContainer').innerHTML='<div class="chuan-item"><div class="chuan-label">初传</div><div class="chuan-zhi">'+chuan.chuan1+' · '+sj1+'</div><div class="chuan-detail">'+w1.wx+'气'+w1.strength+' · '+shenjiangMeaning[sj1]+'</div></div><div class="chuan-item"><div class="chuan-label">中传</div><div class="chuan-zhi">'+chuan.chuan2+' · '+sj2+'</div><div class="chuan-detail">'+w2.wx+'气'+w2.strength+' · '+shenjiangMeaning[sj2]+'</div></div><div class="chuan-item"><div class="chuan-label">末传</div><div class="chuan-zhi">'+chuan.chuan3+' · '+sj3+'</div><div class="chuan-detail">'+w3.wx+'气'+w3.strength+' · '+shenjiangMeaning[sj3]+'</div></div>';document.getElementById('ganzhiRow').innerHTML='<div class="ganzhi-chip"><div class="chip-label">日干</div><div class="chip-value">'+riGan+'</div><div class="chip-sub">'+gw1.wx+'·'+gw1.strength+'</div></div><div class="ganzhi-chip"><div class="chip-label">日支</div><div class="chip-value">'+riZhi+'</div><div class="chip-sub">'+wr1.wx+'·'+wr1.strength+'</div></div><div class="ganzhi-chip"><div class="chip-label">旺相</div><div class="chip-value" style="font-size:13px">'+gw1.desc+'</div></div>';var ganRel=getGanZhiRelation(riGan,riZhi);var relBox=document.getElementById('relationBox');relBox.innerHTML='<div style="font-size:12px;color:var(--text-secondary);margin-bottom:6px">日干与日支关系：</div><span class="relation-tag '+ganRel.tag+'">'+ganRel.rel+'</span><div style="margin-top:8px;font-size:13px;color:var(--text-secondary)">'+ganRel.desc+'</div>';var purity=evalPurity(sj1,sj2,sj3);var chipsHtml='';for(var i=0;i<3;i++){var curSJ=i===0?sj1:i===1?sj2:sj3;var chipClass=jishenSet.has(curSJ)?'ji':xiongshenSet.has(curSJ)?'xiong':'neutral';chipsHtml+='<span class="purity-chip '+chipClass+'">'+curSJ+'</span>';}document.getElementById('purityBox').innerHTML='<div class="purity-chips">'+chipsHtml+'</div><div class="purity-result '+purity.cls+'">'+purity.purity+'：'+purity.desc+'</div>';var hy=evalHuying(sj1,sj3);document.getElementById('huyingBox').innerHTML='<div class="huying-row"><span class="huying-chip '+hy.cls+'">'+sj1+'</span><span style="font-size:20px;color:var(--primary)">→</span><span class="huying-chip '+hy.cls+'">'+sj3+'</span></div><div class="purity-result '+hy.cls+'">'+hy.pattern+'：'+hy.result+'</div><div style="margin-top:8px;font-size:13px;color:var(--text-secondary)">'+hy.desc+'</div>';var base=getBaseScore(chuan);applyFrameAdjustments(base,frame);var sig=getSignal(base.score,purity.signal,hy.signal,ganRel);var sigBox=document.getElementById('signalBox');sigBox.className='signal-box '+sig.signalCls;sigBox.innerHTML='<div class="signal-label">决策信号</div><div class="signal-word">'+sig.signal+'</div><div class="signal-strength">'+sig.stars+'（'+Math.abs(sig.total).toFixed(1)+'/5）</div>';var basisHtml='<div class="basis-title">核心依据</div>';base.reasons.forEach(function(r){basisHtml+='<div class="basis-item">'+r+'</div>';});basisHtml+='<div class="basis-item">三传纯度：'+purity.purity+'（'+purity.desc+'）</div>';basisHtml+='<div class="basis-item">初末呼应：'+hy.pattern+'（'+hy.result+'）</div>';basisHtml+='<div class="basis-item">日干日支：'+ganRel.rel+'关系（'+ganRel.desc+'）</div>';document.getElementById('signalBasis').innerHTML=basisHtml;document.getElementById('resultSection').classList.add('show');document.getElementById('resultSection').scrollIntoView({behavior:'smooth',block:'start'});window._currentCase={id:generateId(),date:date,shichen:shichen,target:target,question:'能不能买 '+target+'？',chuan1:chuan.chuan1,sj1:sj1,sj2:sj2,sj3:sj3,chuan2:chuan.chuan2,chuan3:chuan.chuan3,decision:sig.signal,reasons:base.reasons.join('\n'),result:'',review:'',createdAt:new Date().toISOString(),frame:frame};}
+function startDivination(){var date=document.getElementById('inputDate').value;var shichen=document.getElementById('inputShichen').value;var eventType=document.getElementById('inputEventType').value;var target=(document.getElementById('inputPreset').value||document.getElementById('inputTarget').value).trim();var question=document.getElementById('inputQuestion').value.trim()||buildQuestion(eventType,target);if(!date||!shichen){alert('请填写日期和时辰');return;}if(!target){alert('请选择或输入所问之事');return;}if(!question){alert('请填写占测问题');return;}var frame=getLiurenFrame(date,shichen);var riGan=frame.riGan;var riZhi=frame.riZhi;var chuan=frame.chuan;renderLiurenFrame(frame);var sj1=zhiToShenjiang[chuan.chuan1];var sj2=zhiToShenjiang[chuan.chuan2];var sj3=zhiToShenjiang[chuan.chuan3];var w1=wuxing[chuan.chuan1];var w2=wuxing[chuan.chuan2];var w3=wuxing[chuan.chuan3];var gw1=ganWangxiang[riGan];var wr1=wuxing[riZhi];document.getElementById('chuanContainer').innerHTML='<div class="chuan-item"><div class="chuan-label">初传</div><div class="chuan-zhi">'+chuan.chuan1+' · '+sj1+'</div><div class="chuan-detail">'+w1.wx+'气'+w1.strength+' · '+shenjiangMeaning[sj1]+'</div></div><div class="chuan-item"><div class="chuan-label">中传</div><div class="chuan-zhi">'+chuan.chuan2+' · '+sj2+'</div><div class="chuan-detail">'+w2.wx+'气'+w2.strength+' · '+shenjiangMeaning[sj2]+'</div></div><div class="chuan-item"><div class="chuan-label">末传</div><div class="chuan-zhi">'+chuan.chuan3+' · '+sj3+'</div><div class="chuan-detail">'+w3.wx+'气'+w3.strength+' · '+shenjiangMeaning[sj3]+'</div></div>';document.getElementById('ganzhiRow').innerHTML='<div class="ganzhi-chip"><div class="chip-label">日干</div><div class="chip-value">'+riGan+'</div><div class="chip-sub">'+gw1.wx+'·'+gw1.strength+'</div></div><div class="ganzhi-chip"><div class="chip-label">日支</div><div class="chip-value">'+riZhi+'</div><div class="chip-sub">'+wr1.wx+'·'+wr1.strength+'</div></div><div class="ganzhi-chip"><div class="chip-label">旺相</div><div class="chip-value" style="font-size:13px">'+gw1.desc+'</div></div>';var ganRel=getGanZhiRelation(riGan,riZhi);var relBox=document.getElementById('relationBox');relBox.innerHTML='<div style="font-size:12px;color:var(--text-secondary);margin-bottom:6px">日干与日支关系：</div><span class="relation-tag '+ganRel.tag+'">'+ganRel.rel+'</span><div style="margin-top:8px;font-size:13px;color:var(--text-secondary)">'+ganRel.desc+'</div>';var purity=evalPurity(sj1,sj2,sj3);var chipsHtml='';for(var i=0;i<3;i++){var curSJ=i===0?sj1:i===1?sj2:sj3;var chipClass=jishenSet.has(curSJ)?'ji':xiongshenSet.has(curSJ)?'xiong':'neutral';chipsHtml+='<span class="purity-chip '+chipClass+'">'+curSJ+'</span>';}document.getElementById('purityBox').innerHTML='<div class="purity-chips">'+chipsHtml+'</div><div class="purity-result '+purity.cls+'">'+purity.purity+'：'+purity.desc+'</div>';var hy=evalHuying(sj1,sj3);document.getElementById('huyingBox').innerHTML='<div class="huying-row"><span class="huying-chip '+hy.cls+'">'+sj1+'</span><span style="font-size:20px;color:var(--primary)">→</span><span class="huying-chip '+hy.cls+'">'+sj3+'</span></div><div class="purity-result '+hy.cls+'">'+hy.pattern+'：'+hy.result+'</div><div style="margin-top:8px;font-size:13px;color:var(--text-secondary)">'+hy.desc+'</div>';var base=getBaseScore(chuan);applyFrameAdjustments(base,frame);var sig=getSignal(base.score,purity.signal,hy.signal,ganRel,eventType);var sigBox=document.getElementById('signalBox');sigBox.className='signal-box '+sig.signalCls;sigBox.innerHTML='<div class="signal-label">'+eventType+'信号</div><div class="signal-word">'+sig.signal+'</div><div class="signal-strength">'+sig.stars+'（'+Math.abs(sig.total).toFixed(1)+'/5）</div>';var basisHtml='<div class="basis-title">核心依据</div>';base.reasons.forEach(function(r){basisHtml+='<div class="basis-item">'+r+'</div>';});basisHtml+='<div class="basis-item">三传纯度：'+purity.purity+'（'+purity.desc+'）</div>';basisHtml+='<div class="basis-item">初末呼应：'+hy.pattern+'（'+hy.result+'）</div>';basisHtml+='<div class="basis-item">日干日支：'+ganRel.rel+'关系（'+ganRel.desc+'）</div>';document.getElementById('signalBasis').innerHTML=basisHtml;document.getElementById('resultSection').classList.add('show');document.getElementById('resultSection').scrollIntoView({behavior:'smooth',block:'start'});window._currentCase={id:generateId(),date:date,shichen:shichen,eventType:eventType,target:target,question:question,chuan1:chuan.chuan1,sj1:sj1,sj2:sj2,sj3:sj3,chuan2:chuan.chuan2,chuan3:chuan.chuan3,decision:sig.signal,reasons:base.reasons.join('\n'),result:'',review:'',createdAt:new Date().toISOString(),frame:frame};}
 
 var STORAGE_KEY='liuren_cases';
 function getCases(){try{return JSON.parse(localStorage.getItem(STORAGE_KEY)||'[]');}catch(e){return [];}}
@@ -310,7 +353,7 @@ var currentFilter='all';
 function setFilter(f){currentFilter=f;document.querySelectorAll('.filter-btn').forEach(function(b){b.classList.remove('active');});event.target.classList.add('active');renderHistory();}
 function openHistory(){document.getElementById('historyModal').classList.add('show');renderHistory();}
 function closeHistory(){document.getElementById('historyModal').classList.remove('show');}
-function renderHistory(){var cases=getCases();var list=document.getElementById('historyList');var filtered=cases;if(currentFilter==='buy')filtered=cases.filter(function(c){return c.decision.indexOf('买')!==-1||c.decision==='强买入'||c.decision==='谨慎买入';});else if(currentFilter==='sell')filtered=cases.filter(function(c){return c.decision.indexOf('卖')!==-1;});else if(currentFilter==='hold')filtered=cases.filter(function(c){return c.decision==='观望';});else if(currentFilter==='unverified')filtered=cases.filter(function(c){return !c.result;});if(filtered.length===0){list.innerHTML='<div class="empty-state">暂无案例，起了第一卦再来吧~</div>';return;}list.innerHTML=filtered.map(function(c){return'<div class="case-item"><div class="case-header"><span class="case-date">'+c.date+' '+c.shichen+'时</span><span class="case-decision '+c.decision+'">'+c.decision+'</span></div><div class="case-target">'+c.target+'</div><div class="case-question">'+c.question+'</div><div class="case-chuan">三传：'+c.chuan1+' → '+c.chuan2+' → '+c.chuan3+'</div><div class="case-result-row"><input type="text" class="case-result-input" placeholder="事后结果" value="'+(c.result||'')+'" onchange="updateCaseResult(\''+c.id+'\',this.value)"><button class="case-result-save" onclick="saveReviewPrompt(\''+c.id+'\')">复盘</button></div>'+(c.review?'<div class="case-review">复盘：'+c.review+'</div>':'')+'</div>';}).join('');}
+function renderHistory(){var cases=getCases();var list=document.getElementById('historyList');var filtered=cases;if(currentFilter==='positive')filtered=cases.filter(function(c){return c.decision.indexOf('买')!==-1||c.decision.indexOf('可行')!==-1;});else if(currentFilter==='negative')filtered=cases.filter(function(c){return c.decision.indexOf('卖')!==-1||c.decision.indexOf('不宜')!==-1;});else if(currentFilter==='hold')filtered=cases.filter(function(c){return c.decision==='观望';});else if(currentFilter==='unverified')filtered=cases.filter(function(c){return !c.result;});if(filtered.length===0){list.innerHTML='<div class="empty-state">暂无案例，起了第一卦再来吧~</div>';return;}list.innerHTML=filtered.map(function(c){return'<div class="case-item"><div class="case-header"><span class="case-date">'+c.date+' '+c.shichen+'时</span><span class="case-decision '+c.decision+'">'+c.decision+'</span></div><div class="case-target">'+(c.eventType?'['+c.eventType+'] ':'')+c.target+'</div><div class="case-question">'+c.question+'</div><div class="case-chuan">三传：'+c.chuan1+' → '+c.chuan2+' → '+c.chuan3+'</div><div class="case-result-row"><input type="text" class="case-result-input" placeholder="事后结果" value="'+(c.result||'')+'" onchange="updateCaseResult(\''+c.id+'\',this.value)"><button class="case-result-save" onclick="saveReviewPrompt(\''+c.id+'\')">复盘</button></div>'+(c.review?'<div class="case-review">复盘：'+c.review+'</div>':'')+'</div>';}).join('');}
 function updateCaseResult(id,result){var cases=getCases();var idx=cases.findIndex(function(c){return c.id===id;});if(idx>=0){cases[idx].result=result;saveCases(cases);}}
 function saveReviewPrompt(id){var review=prompt('请输入复盘内容（判断是否准确，经验教训）：');if(review===null)return;var cases=getCases();var idx=cases.findIndex(function(c){return c.id===id;});if(idx>=0){cases[idx].review=review;saveCases(cases);renderHistory();}}
 document.getElementById('historyModal').addEventListener('click',function(e){if(e.target===this)closeHistory();});
