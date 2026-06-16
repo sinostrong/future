@@ -15,9 +15,10 @@ DB_PATH = os.path.join(DATA_DIR, "cases.db")
 TOKEN_HASH = os.environ.get("LIUREN_TOKEN_HASH", "")
 HOST = os.environ.get("LIUREN_API_HOST", "127.0.0.1")
 PORT = int(os.environ.get("LIUREN_API_PORT", "8787"))
-OPENAI_API_KEY = os.environ.get("OPENAI_API_KEY", "")
-OPENAI_MODEL = os.environ.get("OPENAI_MODEL", "gpt-4.1-mini")
-OPENAI_BASE_URL = os.environ.get("OPENAI_BASE_URL", "https://api.openai.com/v1")
+AI_API_KEY = os.environ.get("AI_API_KEY") or os.environ.get("OPENAI_API_KEY", "")
+AI_MODEL = os.environ.get("AI_MODEL") or os.environ.get("OPENAI_MODEL", "gpt-4.1-mini")
+AI_BASE_URL = os.environ.get("AI_BASE_URL") or os.environ.get("OPENAI_BASE_URL", "https://api.openai.com/v1")
+AI_API_STYLE = os.environ.get("AI_API_STYLE", "responses")
 
 
 def init_db():
@@ -84,26 +85,72 @@ def build_ai_prompt(payload):
     )
 
 
+def parse_responses_text(data):
+    text = data.get("output_text")
+    if text:
+        return text
+    parts = []
+    for item in data.get("output", []):
+        for content in item.get("content", []):
+            if content.get("type") in ("output_text", "text"):
+                parts.append(content.get("text", ""))
+    return "\n".join([p for p in parts if p]).strip()
+
+
+def parse_chat_text(data):
+    choices = data.get("choices") or []
+    if choices:
+        message = choices[0].get("message") or {}
+        content = message.get("content")
+        if isinstance(content, str):
+            return content.strip()
+        if isinstance(content, list):
+            parts = []
+            for item in content:
+                if isinstance(item, dict):
+                    parts.append(item.get("text") or item.get("content") or "")
+            return "\n".join([p for p in parts if p]).strip()
+    return ""
+
+
 def call_ai_reading(payload):
-    if not OPENAI_API_KEY:
-        raise RuntimeError("AI 未配置：服务器缺少 OPENAI_API_KEY")
-    req_body = {
-        "model": OPENAI_MODEL,
-        "input": [
-            {
-                "role": "system",
-                "content": "你负责把大六壬规则引擎的结构化结果整理成清楚、克制、可复盘的中文表达。",
-            },
-            {"role": "user", "content": build_ai_prompt(payload)},
-        ],
-        "temperature": 0.3,
-    }
+    if not AI_API_KEY:
+        raise RuntimeError("AI 未配置：服务器缺少 AI_API_KEY")
+    prompt = build_ai_prompt(payload)
+    if AI_API_STYLE == "chat_completions":
+        req_body = {
+            "model": AI_MODEL,
+            "messages": [
+                {
+                    "role": "system",
+                    "content": "你负责把大六壬规则引擎的结构化结果整理成清楚、克制、可复盘的中文表达。",
+                },
+                {"role": "user", "content": prompt},
+            ],
+            "temperature": 0.3,
+        }
+        endpoint = AI_BASE_URL.rstrip("/") + "/chat/completions"
+        parser = parse_chat_text
+    else:
+        req_body = {
+            "model": AI_MODEL,
+            "input": [
+                {
+                    "role": "system",
+                    "content": "你负责把大六壬规则引擎的结构化结果整理成清楚、克制、可复盘的中文表达。",
+                },
+                {"role": "user", "content": prompt},
+            ],
+            "temperature": 0.3,
+        }
+        endpoint = AI_BASE_URL.rstrip("/") + "/responses"
+        parser = parse_responses_text
     req = urllib.request.Request(
-        OPENAI_BASE_URL.rstrip("/") + "/responses",
+        endpoint,
         data=json.dumps(req_body, ensure_ascii=False).encode("utf-8"),
         method="POST",
         headers={
-            "Authorization": "Bearer " + OPENAI_API_KEY,
+            "Authorization": "Bearer " + AI_API_KEY,
             "Content-Type": "application/json",
         },
     )
@@ -113,18 +160,10 @@ def call_ai_reading(payload):
     except urllib.error.HTTPError as exc:
         detail = exc.read().decode("utf-8", errors="replace")
         raise RuntimeError(f"AI 调用失败：HTTP {exc.code} {detail[:300]}")
-    text = data.get("output_text")
-    if not text:
-        parts = []
-        for item in data.get("output", []):
-            for content in item.get("content", []):
-                if content.get("type") in ("output_text", "text"):
-                    parts.append(content.get("text", ""))
-        text = "\n".join([p for p in parts if p]).strip()
+    text = parser(data)
     if not text:
         raise RuntimeError("AI 未返回可用文本")
     return text
-
 
 class Handler(BaseHTTPRequestHandler):
     server_version = "LiurenCaseAPI/1.0"
@@ -166,7 +205,7 @@ class Handler(BaseHTTPRequestHandler):
                 raw = self.rfile.read(min(length, 500_000))
                 data = json.loads(raw.decode("utf-8") or "{}")
                 text = call_ai_reading(data)
-                json_response(self, 200, {"ok": True, "reading": text, "model": OPENAI_MODEL})
+                json_response(self, 200, {"ok": True, "reading": text, "model": AI_MODEL})
             except Exception as exc:
                 json_response(self, 400, {"ok": False, "error": str(exc)})
             return

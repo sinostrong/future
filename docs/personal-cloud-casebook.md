@@ -55,6 +55,40 @@ Content-Type: application/json
 - 打赏入口可以从文案升级成二维码或支付链接。
 - 后续可以增加公开案例、老师模式、付费复盘、学习课程。
 
+## AI 表达整理配置
+
+AI 不参与底层排盘，只做判断表达整理、风险提示和复盘观察点生成。
+
+服务器环境文件：
+
+```text
+/etc/liuren/liuren-api.env
+```
+
+OpenAI Responses 风格：
+
+```text
+AI_API_KEY=你的_key
+AI_BASE_URL=https://api.openai.com/v1
+AI_MODEL=gpt-4.1-mini
+AI_API_STYLE=responses
+```
+
+OpenAI 兼容 Chat Completions 风格，MiniMax/Mixmax 若兼容此格式，可这样配置：
+
+```text
+AI_API_KEY=你的_minimax_key
+AI_BASE_URL=你的_minimax_base_url
+AI_MODEL=你的_minimax_model
+AI_API_STYLE=chat_completions
+```
+
+配置后重启：
+
+```bash
+sudo systemctl restart liuren-api.service
+```
+
 ## 备份
 
 核心数据文件：
