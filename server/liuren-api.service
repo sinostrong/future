@@ -1,0 +1,19 @@
+[Unit]
+Description=Liuren personal case API
+After=network.target
+
+[Service]
+Type=simple
+User=www-data
+Group=www-data
+EnvironmentFile=/etc/liuren/liuren-api.env
+ExecStart=/usr/bin/python3 /opt/liuren/liuren_api.py
+Restart=always
+RestartSec=3
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=full
+ReadWritePaths=/var/lib/liuren
+
+[Install]
+WantedBy=multi-user.target
