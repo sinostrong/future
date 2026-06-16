@@ -7,6 +7,7 @@ import sqlite3
 import time
 import urllib.error
 import urllib.request
+import re
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from urllib.parse import urlparse
 
@@ -19,6 +20,7 @@ AI_API_KEY = os.environ.get("AI_API_KEY") or os.environ.get("OPENAI_API_KEY", ""
 AI_MODEL = os.environ.get("AI_MODEL") or os.environ.get("OPENAI_MODEL", "gpt-4.1-mini")
 AI_BASE_URL = os.environ.get("AI_BASE_URL") or os.environ.get("OPENAI_BASE_URL", "https://api.openai.com/v1")
 AI_API_STYLE = os.environ.get("AI_API_STYLE", "responses")
+AI_MAX_TOKENS = int(os.environ.get("AI_MAX_TOKENS", "900"))
 
 
 def init_db():
@@ -69,19 +71,57 @@ def normalize_case(case):
 
 
 def build_ai_prompt(payload):
+    case = payload.get("case") or {}
+    reading = payload.get("reading") or {}
+    frame = payload.get("frame") or {}
+    chuan = frame.get("chuan") or {}
+    event_type = case.get("eventType", "")
+    target = case.get("target", "")
+    target_for_ai = "这个标的" if "投资" in event_type or "求财" in event_type else target
+    question = case.get("question", "")
+    if target:
+        question = question.replace(target, target_for_ai)
+    extra_warning = ""
+    if "健康" in event_type or "忧患" in event_type:
+        extra_warning = "本次是健康相关事项，必须提醒：这不是医疗诊断，身体不适要以检查和医嘱为准。"
+    elif "投资" in event_type or "求财" in event_type:
+        extra_warning = "本次是投资求财事项，必须提醒：这不构成投资建议，只能作为仓位、节奏和风险观察参考。"
+    plain = "\n".join(
+        [
+            f"事项类型：{event_type}",
+            f"所问对象：{target_for_ai}",
+            f"判断重点：{case.get('focus', '')}",
+            f"观察周期：{case.get('horizon', '')}",
+            f"所问问题：{question}",
+            f"规则引擎结论：{case.get('decision', '')}",
+            f"三传：初传 {chuan.get('chuan1', '')}，中传 {chuan.get('chuan2', '')}，末传 {chuan.get('chuan3', '')}",
+            f"规则总象：{reading.get('summary', '')}",
+            f"所问分析：{reading.get('matter', '')}",
+            extra_warning,
+            "请只整理这一课的判断表达。",
+        ]
+    )
     return (
         "你是一个严谨的大六壬观事表达整理助手。"
         "底层排盘和初判已经由规则引擎给出，你不要重新玄断，不要夸大确定性，"
-        "只根据输入内容，把判断整理成更清楚、更贴近所问之事的中文。\n\n"
+        "只根据输入内容，把当前这一课的判断整理成更清楚、更贴近所问之事的中文。"
+        "你不是在设计模板，也不是在举例填空。\n\n"
+        "严禁事项：\n"
+        "1. 不要讲金融产品常识、市场数据、政策、资金流向、成交量、均线、支撑位、技术指标。\n"
+        "2. 不要把三传解释成宏观、行业、技术指标这类现代分析框架。\n"
+        "3. 不要编造输入里没有的信息。\n"
+        "4. 不要说“如果你需要进一步细化”。\n"
+        "5. 不要把用户输入当成让你改格式。\n\n"
+        "6. 不要给出输入以外的外部原因，只能围绕规则总象、三传、规则引擎结论、风险和行动节奏。\n\n"
         "输出要求：\n"
         "1. 用普通人能看懂的话，不要堆术语。\n"
-        "2. 分为：本课看什么、主要判断、风险与变数、行动建议、复盘观察点。\n"
+        "2. 分为五段：本课看什么、主要判断、风险与变数、行动建议、复盘观察点。\n"
         "3. 如果是健康问题，必须提醒不能替代医疗检查。\n"
         "4. 如果是投资问题，必须提醒不构成投资建议，重点放在仓位、节奏、风险。\n"
         "5. 不要说绝对话，不要制造恐惧。\n"
         "6. 语言要简洁、稳、有人味。\n\n"
-        "输入数据如下：\n"
-        + json.dumps(payload, ensure_ascii=False, indent=2)
+        "下面是本次观事记录，请直接输出整理结果：\n"
+        + plain
     )
 
 
@@ -97,19 +137,25 @@ def parse_responses_text(data):
     return "\n".join([p for p in parts if p]).strip()
 
 
+def clean_ai_text(text):
+    text = re.sub(r"<think>.*?</think>", "", text or "", flags=re.S).strip()
+    text = re.sub(r"^<think>.*", "", text, flags=re.S).strip()
+    return text
+
+
 def parse_chat_text(data):
     choices = data.get("choices") or []
     if choices:
         message = choices[0].get("message") or {}
         content = message.get("content")
         if isinstance(content, str):
-            return content.strip()
+            return clean_ai_text(content)
         if isinstance(content, list):
             parts = []
             for item in content:
                 if isinstance(item, dict):
                     parts.append(item.get("text") or item.get("content") or "")
-            return "\n".join([p for p in parts if p]).strip()
+            return clean_ai_text("\n".join([p for p in parts if p]))
     return ""
 
 
@@ -128,6 +174,7 @@ def call_ai_reading(payload):
                 {"role": "user", "content": prompt},
             ],
             "temperature": 0.3,
+            "max_tokens": AI_MAX_TOKENS,
         }
         endpoint = AI_BASE_URL.rstrip("/") + "/chat/completions"
         parser = parse_chat_text
@@ -142,6 +189,7 @@ def call_ai_reading(payload):
                 {"role": "user", "content": prompt},
             ],
             "temperature": 0.3,
+            "max_tokens": AI_MAX_TOKENS,
         }
         endpoint = AI_BASE_URL.rstrip("/") + "/responses"
         parser = parse_responses_text
@@ -163,7 +211,7 @@ def call_ai_reading(payload):
     text = parser(data)
     if not text:
         raise RuntimeError("AI 未返回可用文本")
-    return text
+    return clean_ai_text(text)
 
 class Handler(BaseHTTPRequestHandler):
     server_version = "LiurenCaseAPI/1.0"

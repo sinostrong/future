@@ -83,6 +83,15 @@ AI_MODEL=你的_minimax_model
 AI_API_STYLE=chat_completions
 ```
 
+当前 MiniMax 已验证配置：
+
+```text
+AI_BASE_URL=https://api.minimax.chat/v1
+AI_MODEL=MiniMax-Text-01
+AI_API_STYLE=chat_completions
+AI_MAX_TOKENS=900
+```
+
 配置后重启：
 
 ```bash
