@@ -5,6 +5,8 @@ import json
 import os
 import sqlite3
 import time
+import urllib.error
+import urllib.request
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from urllib.parse import urlparse
 
@@ -13,6 +15,9 @@ DB_PATH = os.path.join(DATA_DIR, "cases.db")
 TOKEN_HASH = os.environ.get("LIUREN_TOKEN_HASH", "")
 HOST = os.environ.get("LIUREN_API_HOST", "127.0.0.1")
 PORT = int(os.environ.get("LIUREN_API_PORT", "8787"))
+OPENAI_API_KEY = os.environ.get("OPENAI_API_KEY", "")
+OPENAI_MODEL = os.environ.get("OPENAI_MODEL", "gpt-4.1-mini")
+OPENAI_BASE_URL = os.environ.get("OPENAI_BASE_URL", "https://api.openai.com/v1")
 
 
 def init_db():
@@ -62,6 +67,65 @@ def normalize_case(case):
     return case_id, case, now
 
 
+def build_ai_prompt(payload):
+    return (
+        "你是一个严谨的大六壬观事表达整理助手。"
+        "底层排盘和初判已经由规则引擎给出，你不要重新玄断，不要夸大确定性，"
+        "只根据输入内容，把判断整理成更清楚、更贴近所问之事的中文。\n\n"
+        "输出要求：\n"
+        "1. 用普通人能看懂的话，不要堆术语。\n"
+        "2. 分为：本课看什么、主要判断、风险与变数、行动建议、复盘观察点。\n"
+        "3. 如果是健康问题，必须提醒不能替代医疗检查。\n"
+        "4. 如果是投资问题，必须提醒不构成投资建议，重点放在仓位、节奏、风险。\n"
+        "5. 不要说绝对话，不要制造恐惧。\n"
+        "6. 语言要简洁、稳、有人味。\n\n"
+        "输入数据如下：\n"
+        + json.dumps(payload, ensure_ascii=False, indent=2)
+    )
+
+
+def call_ai_reading(payload):
+    if not OPENAI_API_KEY:
+        raise RuntimeError("AI 未配置：服务器缺少 OPENAI_API_KEY")
+    req_body = {
+        "model": OPENAI_MODEL,
+        "input": [
+            {
+                "role": "system",
+                "content": "你负责把大六壬规则引擎的结构化结果整理成清楚、克制、可复盘的中文表达。",
+            },
+            {"role": "user", "content": build_ai_prompt(payload)},
+        ],
+        "temperature": 0.3,
+    }
+    req = urllib.request.Request(
+        OPENAI_BASE_URL.rstrip("/") + "/responses",
+        data=json.dumps(req_body, ensure_ascii=False).encode("utf-8"),
+        method="POST",
+        headers={
+            "Authorization": "Bearer " + OPENAI_API_KEY,
+            "Content-Type": "application/json",
+        },
+    )
+    try:
+        with urllib.request.urlopen(req, timeout=60) as resp:
+            data = json.loads(resp.read().decode("utf-8"))
+    except urllib.error.HTTPError as exc:
+        detail = exc.read().decode("utf-8", errors="replace")
+        raise RuntimeError(f"AI 调用失败：HTTP {exc.code} {detail[:300]}")
+    text = data.get("output_text")
+    if not text:
+        parts = []
+        for item in data.get("output", []):
+            for content in item.get("content", []):
+                if content.get("type") in ("output_text", "text"):
+                    parts.append(content.get("text", ""))
+        text = "\n".join([p for p in parts if p]).strip()
+    if not text:
+        raise RuntimeError("AI 未返回可用文本")
+    return text
+
+
 class Handler(BaseHTTPRequestHandler):
     server_version = "LiurenCaseAPI/1.0"
 
@@ -93,6 +157,19 @@ class Handler(BaseHTTPRequestHandler):
 
     def do_POST(self):
         path = urlparse(self.path).path
+        if path == "/api/ai/reading":
+            if not token_ok(self.headers.get("Authorization")):
+                json_response(self, 401, {"ok": False, "error": "unauthorized"})
+                return
+            try:
+                length = int(self.headers.get("Content-Length", "0"))
+                raw = self.rfile.read(min(length, 500_000))
+                data = json.loads(raw.decode("utf-8") or "{}")
+                text = call_ai_reading(data)
+                json_response(self, 200, {"ok": True, "reading": text, "model": OPENAI_MODEL})
+            except Exception as exc:
+                json_response(self, 400, {"ok": False, "error": str(exc)})
+            return
         if path != "/api/cases":
             json_response(self, 404, {"ok": False, "error": "not found"})
             return
